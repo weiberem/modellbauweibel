@@ -22,11 +22,7 @@ function renderHeader() {
       <nav class="nav-wrapper">
         <a href="index.html" class="logo">
           <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 2L4 14h4v16h20V14h4L18 2zm-2 26h-4v-8h4v8zm8 0h-4v-8h4v8z" fill="currentColor" opacity="0.15"/>
-            <path d="M6 18L18 4l12 14M3 17l15-14 15 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 32V17h16v15" stroke="currentColor" stroke-width="2" fill="none"/>
-            <path d="M14 32v-8h8v8" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            <path d="M2 20l6-2m26 2l-6-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M33 16l-15-14-3 3 4 5-12 4-5-3-2 2 6 6-3 3c-1 1-1.5 3-.5 4s3 .5 4-.5l3-3 6 6 2-2-3-5 4-12 5 4z" fill="currentColor" opacity="0.9"/>
           </svg>
           Modellbau <span>Weibel</span>
         </a>
@@ -76,8 +72,7 @@ function renderFooter() {
         <div class="footer-about">
           <a href="index.html" class="logo">
             <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
-              <path d="M6 18L18 4l12 14M3 17l15-14 15 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M10 32V17h16v15" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M33 16l-15-14-3 3 4 5-12 4-5-3-2 2 6 6-3 3c-1 1-1.5 3-.5 4s3 .5 4-.5l3-3 6 6 2-2-3-5 4-12 5 4z" fill="currentColor" opacity="0.9"/>
             </svg>
             Modellbau <span>Weibel</span>
           </a>
