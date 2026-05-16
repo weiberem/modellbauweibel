@@ -1,163 +1,104 @@
-# Modellbau Weibel – Anleitung zur Inhaltspflege
+# Modellbau Weibel – Anleitung
 
-## Übersicht
+## Server starten
 
-Die Website ist so aufgebaut, dass du neue Projekte und Produkte ganz einfach hinzufügen kannst – ohne Programmierkenntnisse. Du musst nur zwei Dinge tun:
-
-1. **Bilder** in den richtigen Ordner kopieren
-2. **JSON-Datei** bearbeiten (einfache Textdatei)
-
----
-
-## Neues Projekt hinzufügen
-
-### Schritt 1: Bilder vorbereiten
-
-1. Erstelle einen neuen Ordner in `images/projekte/` mit dem Projektnamen (Kleinbuchstaben, Bindestriche statt Leerzeichen)
-   - Beispiel: `images/projekte/mein-neues-modell/`
-2. Kopiere deine Bilder in diesen Ordner
-   - Benenne sie z.B. `01.jpg`, `02.jpg`, `03.jpg` usw.
-   - Das erste Bild (`01.jpg`) wird als Titelbild verwendet
-
-### Schritt 2: Projekt in die Datenliste eintragen
-
-Öffne die Datei `data/projekte.json` mit einem Texteditor (z.B. Notepad, TextEdit).
-
-Füge am Ende der Liste (vor der letzten `]` Klammer) einen neuen Block hinzu:
-
-```json
-  ,
-  {
-    "id": "mein-neues-modell",
-    "name": "Mein Neues Modell",
-    "massstab": "1:8",
-    "kurzbeschreibung": "Kurze Beschreibung für die Übersicht",
-    "beschreibung": "Ausführliche Beschreibung des Projekts. Hier kannst du mehr Details schreiben.",
-    "spannweite": "1200 mm",
-    "laenge": "900 mm",
-    "gewicht": "2500 g",
-    "antrieb": "Brushless Motor, 4S 3000 mAh",
-    "bilder": [
-      "images/projekte/mein-neues-modell/01.jpg",
-      "images/projekte/mein-neues-modell/02.jpg",
-      "images/projekte/mein-neues-modell/03.jpg"
-    ],
-    "titelbild": "images/projekte/mein-neues-modell/01.jpg",
-    "status": "In Arbeit",
-    "jahr": 2026
-  }
+```bash
+npm install       # Einmalig: Abhängigkeiten installieren
+npm start         # Server starten auf http://localhost:3000
 ```
 
-**Wichtig:**
-- Vergiss das Komma `,` vor dem `{` nicht (ausser es ist der erste Eintrag)
-- Alle Texte in Anführungszeichen `"` schreiben
-- Felder die du nicht brauchst einfach leer lassen: `"gewicht": ""`
+## Admin-Bereich
 
----
+Gehe zu **http://localhost:3000/admin/** und logge dich ein:
 
-## Neues Produkt hinzufügen
+- **Benutzer:** `admin`
+- **Passwort:** `modellbau2024`
 
-### Schritt 1: Bilder vorbereiten
+> Bitte ändere das Passwort nach dem ersten Login unter Dashboard → Passwort ändern.
 
-Kopiere Produktbilder in den Ordner `images/produkte/`
-- Beispiel: `images/produkte/mein-bausatz-01.jpg`
+### Neues Projekt erstellen
 
-### Schritt 2: Produkt in die Datenliste eintragen
+1. Im Admin unter **Projekte** → **+ Neues Projekt**
+2. Formular ausfüllen:
+   - Name (z.B. "F-18 Hornet")
+   - Massstab (z.B. "1:5")
+   - Beschreibung, Technische Daten
+   - **Verfügbarkeit**: Einzelstück / Bausatz / Bauplan / Bausatz+Bauplan
+   - Status: In Arbeit / Abgeschlossen / Geplant
+3. Speichern → Bilder hochladen (Drag & Drop oder klicken)
+4. Titelbild setzen: Auf ein Bild hovern → "Titelbild" klicken
 
-Öffne die Datei `data/produkte.json` und füge einen neuen Block hinzu:
+### Neues Produkt im Shop erstellen
 
-```json
-  ,
-  {
-    "id": "mein-bausatz",
-    "name": "Mein Modell – CNC-Holzbaukasten",
-    "kurzbeschreibung": "Kurze Beschreibung des Produkts",
-    "beschreibung": "Ausführliche Beschreibung was alles im Bausatz enthalten ist.",
-    "kategorie": "Bausatz",
-    "preis": "CHF 250.–",
-    "inhalt": [
-      "CNC-gefräste Holzteile",
-      "Kleinteile",
-      "Baupläne"
-    ],
-    "bilder": [
-      "images/produkte/mein-bausatz-01.jpg"
-    ],
-    "titelbild": "images/produkte/mein-bausatz-01.jpg",
-    "verfuegbar": true
-  }
-```
+1. Im Admin unter **Produkte / Shop** → **+ Neues Produkt**
+2. Formular ausfüllen:
+   - Name, Beschreibung, Kategorie
+   - **Preis** in CHF
+   - **Lagerbestand** (wird bei Bestellung automatisch reduziert)
+   - Lieferumfang (ein Punkt pro Zeile)
+3. Speichern → Bilder hochladen
 
-**Kategorie** kann sein: `"Bausatz"` oder `"Bauplan"`
+### Bestellungen verwalten
 
-**Verfügbar**: `true` = Auf Lager, `false` = Nicht verfügbar
+Unter **Bestellungen** siehst du alle eingegangenen Bestellungen mit:
+- Kundendaten, Positionen, Total
+- Status ändern: Neu → Bearbeitung → Versendet / Storniert
 
----
+## Webshop für Kunden
 
-## Bilder ersetzen
+Kunden können ohne Login:
+1. Im **Shop** Produkte durchsuchen und in den **Warenkorb** legen
+2. Im **Warenkorb** die Bestellung abschliessen
+3. Zahlung über **PayPal** oder **Kreditkarte**
 
-Die Platzhalter-Bilder auf der Website können einfach ersetzt werden:
+## PayPal einrichten (WICHTIG für Live-Betrieb)
 
-1. **About-Bild** (Startseite): Ersetze `images/about.jpg`
-2. **Projektbilder**: Lege Fotos in den jeweiligen Ordner unter `images/projekte/`
-3. **Produktbilder**: Lege Fotos in `images/produkte/`
+Die PayPal-Integration nutzt aktuell den **Sandbox-Modus** (Testmodus).
 
-**Empfohlene Bildgrössen:**
-- Projektbilder: mindestens 1200 x 800 Pixel
-- Produktbilder: mindestens 1200 x 800 Pixel
-- About-Bild: mindestens 800 x 600 Pixel
-- Format: JPG (für Fotos), PNG (für Grafiken)
+Für echte Zahlungen:
 
----
+1. Erstelle ein PayPal Business-Konto auf [developer.paypal.com](https://developer.paypal.com)
+2. Erstelle eine **App** und kopiere die **Client-ID**
+3. In der Datei `public/warenkorb.html`, ersetze in der PayPal-Script-Zeile:
+   ```
+   client-id=sb
+   ```
+   durch:
+   ```
+   client-id=DEINE_ECHTE_CLIENT_ID
+   ```
 
 ## Ordnerstruktur
 
 ```
 modellbauweibel/
-├── index.html          ← Startseite
-├── projekte.html       ← Projektübersicht
-├── shop.html           ← Bausätze & Baupläne
-├── kontakt.html        ← Kontaktseite
-├── css/
-│   └── style.css       ← Design (nicht ändern)
-├── js/
-│   └── app.js          ← Funktionen (nicht ändern)
-├── data/
-│   ├── projekte.json   ← ★ HIER Projekte bearbeiten
-│   └── produkte.json   ← ★ HIER Produkte bearbeiten
-└── images/
-    ├── about.jpg        ← Bild für "Über mich"
-    ├── projekte/        ← Projektbilder
-    │   ├── f20-tigershark/
-    │   ├── swift-s1/
-    │   ├── pilatus-pc9/
-    │   ├── sr-falcon/
-    │   └── hai-3/
-    └── produkte/        ← Produktbilder
+├── server.js           # Express-Server
+├── db.js               # Datenbank (SQLite)
+├── package.json        # Abhängigkeiten
+├── routes/
+│   ├── api.js          # Öffentliche API (Projekte, Produkte, Bestellungen)
+│   └── admin.js        # Admin-API (CRUD, Bildupload, Auth)
+├── public/             # Statische Website-Dateien
+│   ├── index.html      # Startseite
+│   ├── projekte.html   # Projektübersicht
+│   ├── shop.html       # Webshop
+│   ├── warenkorb.html  # Warenkorb & Checkout
+│   ├── kontakt.html    # Kontaktseite
+│   ├── css/
+│   │   ├── style.css   # Website-Design
+│   │   └── admin.css   # Admin-Design
+│   ├── js/
+│   │   ├── app.js      # Hauptlogik (Navigation, etc.)
+│   │   └── shop.js     # Warenkorb-Logik
+│   └── admin/          # Admin-Panel
+│       ├── login.html
+│       ├── index.html
+│       ├── projekte.html
+│       ├── produkte.html
+│       └── bestellungen.html
+├── uploads/            # Hochgeladene Bilder
+│   ├── projekte/
+│   └── produkte/
+└── data/
+    └── modellbau.db    # SQLite-Datenbank (wird automatisch erstellt)
 ```
-
----
-
-## Kontaktdaten ändern
-
-Die Kontaktdaten stehen in der Datei `js/app.js` in der Funktion `renderFooter()`. 
-Suche nach den folgenden Zeilen und ändere sie:
-
-```
-Martin Weibel
-Bachelstrasse 61
-Lohnstorf, Schweiz
-Tel: 031 809 34 77
-modellbau-weibel@bluewin.ch
-```
-
-Auch auf der Kontaktseite (`kontakt.html`) müssen die Daten angepasst werden.
-
----
-
-## Tipps
-
-- Teste Änderungen immer zuerst lokal im Browser (einfach `index.html` doppelklicken)
-- Mache vor Änderungen eine Sicherheitskopie der JSON-Dateien
-- Bei Problemen: Prüfe ob alle Anführungszeichen `"` und Kommas `,` korrekt gesetzt sind
-- Ein guter Online-JSON-Prüfer: jsonlint.com

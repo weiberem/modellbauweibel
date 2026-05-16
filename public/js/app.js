@@ -7,7 +7,7 @@
 function getCurrentPage() {
   const path = window.location.pathname;
   if (path.includes('projekte')) return 'projekte';
-  if (path.includes('shop')) return 'shop';
+  if (path.includes('shop') || path.includes('warenkorb')) return 'shop';
   if (path.includes('kontakt')) return 'kontakt';
   return 'home';
 }
@@ -31,6 +31,10 @@ function renderHeader() {
           <li><a href="projekte.html" class="${page === 'projekte' ? 'active' : ''}">Projekte</a></li>
           <li><a href="shop.html" class="${page === 'shop' ? 'active' : ''}">Shop</a></li>
           <li><a href="kontakt.html" class="${page === 'kontakt' ? 'active' : ''}">Kontakt</a></li>
+          <li><a href="warenkorb.html" style="position:relative;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            <span class="cart-badge" style="position:absolute;top:-4px;right:-8px;background:#dc2626;color:#fff;font-size:0.65rem;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;font-weight:700;">0</span>
+          </a></li>
         </ul>
         <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
           <span></span><span></span><span></span>

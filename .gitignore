@@ -1,3 +1,15 @@
+# Dependencies
+node_modules/
+
+# Database
+data/*.db
+
+# Uploads (user content)
+uploads/projekte/*
+uploads/produkte/*
+!uploads/projekte/.gitkeep
+!uploads/produkte/.gitkeep
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -13,3 +25,6 @@ desktop.ini
 # Temp files
 *.tmp
 *.bak
+
+# Environment
+.env

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projekte verwalten – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebar">
+      <a href="/admin/" class="sidebar-logo">
+        <svg viewBox="0 0 36 36" width="28" height="28"><path d="M33 16l-15-14-3 3 4 5-12 4-5-3-2 2 6 6-3 3c-1 1-1.5 3-.5 4s3 .5 4-.5l3-3 6 6 2-2-3-5 4-12 5 4z" fill="#c8872b"/></svg>
+        Modellbau <span>Weibel</span>
+      </a>
+      <ul class="sidebar-nav">
+        <li><a href="/admin/"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a></li>
+        <li><a href="/admin/projekte.html" class="active"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Projekte</a></li>
+        <li><a href="/admin/produkte.html"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Produkte / Shop</a></li>
+        <li><a href="/admin/bestellungen.html"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Bestellungen</a></li>
+      </ul>
+      <div class="sidebar-bottom">
+        <a href="/" style="color:rgba(255,255,255,0.5);font-size:0.82rem;text-decoration:none;">← Zur Website</a>
+        <button onclick="logout()" class="btn btn-outline btn-sm btn-full" style="margin-top:8px;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.2);">Abmelden</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+        <div>
+          <h1 class="page-title" style="margin-bottom:4px;">Projekte</h1>
+          <p class="page-subtitle" style="margin-bottom:0;">Bauprojekte verwalten, Bilder hochladen.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewProjekt()">+ Neues Projekt</button>
+      </div>
+
+      <div id="projekte-list"></div>
+
+      <!-- Modal: Projekt bearbeiten -->
+      <div class="admin-modal-bg" id="modal-projekt">
+        <div class="admin-modal" style="max-width:800px;">
+          <div class="admin-modal-header">
+            <h3 id="modal-title">Neues Projekt</h3>
+            <button class="admin-modal-close" onclick="closeModal()">&times;</button>
+          </div>
+          <div class="admin-modal-body">
+            <form id="projekt-form">
+              <input type="hidden" id="pf-id">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Projektname *</label>
+                  <input type="text" id="pf-name" required placeholder="z.B. F-18 Hornet">
+                </div>
+                <div class="form-group">
+                  <label>Massstab</label>
+                  <input type="text" id="pf-massstab" placeholder="z.B. 1:5">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Kurzbeschreibung</label>
+                <input type="text" id="pf-kurz" placeholder="Kurzer Text für die Übersicht">
+              </div>
+              <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea id="pf-beschreibung" placeholder="Ausführliche Projektbeschreibung..."></textarea>
+              </div>
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label>Spannweite</label>
+                  <input type="text" id="pf-spannweite" placeholder="z.B. 1200 mm">
+                </div>
+                <div class="form-group">
+                  <label>Länge</label>
+                  <input type="text" id="pf-laenge" placeholder="z.B. 900 mm">
+                </div>
+                <div class="form-group">
+                  <label>Gewicht</label>
+                  <input type="text" id="pf-gewicht" placeholder="z.B. 2500 g">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Antrieb</label>
+                <input type="text" id="pf-antrieb" placeholder="z.B. Brushless Motor, 4S 3000 mAh">
+              </div>
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label>Status</label>
+                  <select id="pf-status">
+                    <option value="In Arbeit">In Arbeit</option>
+                    <option value="Abgeschlossen">Abgeschlossen</option>
+                    <option value="Geplant">Geplant</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Verfügbarkeit</label>
+                  <select id="pf-verfuegbarkeit">
+                    <option value="einzelstueck">Einzelstück (nicht käuflich)</option>
+                    <option value="bausatz">Als Bausatz erhältlich</option>
+                    <option value="bauplan">Baupläne verfügbar</option>
+                    <option value="bausatz_bauplan">Bausatz + Baupläne</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Jahr</label>
+                  <input type="number" id="pf-jahr" placeholder="2026">
+                </div>
+              </div>
+
+              <div id="pf-verfueg-hint" class="form-hint" style="margin-bottom:16px;padding:10px;background:#fef9f0;border-radius:8px;display:none;">
+                Tipp: Erstelle den Bausatz/Bauplan zuerst im <a href="/admin/produkte.html">Shop</a>, dann wird er automatisch auf der Projektseite verlinkt.
+              </div>
+
+              <!-- Bilder (nur bei Bearbeitung) -->
+              <div id="pf-bilder-section" style="display:none;">
+                <h4 style="margin-bottom:12px;">Bilder</h4>
+                <div class="upload-area" id="pf-upload-area">
+                  <p>Bilder hierher ziehen oder klicken zum Hochladen</p>
+                  <p style="font-size:0.78rem;">(JPG, PNG, WebP – max. 10 MB)</p>
+                  <input type="file" id="pf-file-input" multiple accept="image/*">
+                </div>
+                <div class="image-grid" id="pf-bilder-grid"></div>
+              </div>
+            </form>
+          </div>
+          <div class="admin-modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveProjekt()">Speichern</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let projekte = [];
+
+    async function checkAuth() {
+      const res = await fetch('/admin/check');
+      const data = await res.json();
+      if (!data.loggedIn) window.location.href = '/admin/login.html';
+    }
+    async function logout() {
+      await fetch('/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login.html';
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function verfuegLabel(v) {
+      const map = {
+        'einzelstueck': '<span class="badge badge-info">Einzelstück</span>',
+        'bausatz': '<span class="badge badge-success">Bausatz</span>',
+        'bauplan': '<span class="badge badge-warning">Bauplan</span>',
+        'bausatz_bauplan': '<span class="badge badge-success">Bausatz</span> <span class="badge badge-warning">Bauplan</span>'
+      };
+      return map[v] || map['einzelstueck'];
+    }
+
+    async function loadProjekte() {
+      const res = await fetch('/admin/api/projekte');
+      projekte = await res.json();
+      renderList();
+    }
+
+    function renderList() {
+      const el = document.getElementById('projekte-list');
+      if (projekte.length === 0) {
+        el.innerHTML = '<div class="card" style="text-align:center;color:var(--text-light);">Noch keine Projekte. Erstelle dein erstes Projekt!</div>';
+        return;
+      }
+      el.innerHTML = projekte.map(p => `
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start;">
+          <div style="width:160px;height:110px;border-radius:8px;overflow:hidden;background:var(--bg);flex-shrink:0;">
+            ${p.bilder.length ? `<img src="${p.bilder.find(b=>b.is_cover)?.url || p.bilder[0].url}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.8rem;">Kein Bild</div>'}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <strong style="font-size:1.1rem;">${esc(p.name)}</strong>
+              ${p.massstab ? `<span style="color:var(--text-light);font-size:0.85rem;">M ${esc(p.massstab)}</span>` : ''}
+            </div>
+            <div style="margin-bottom:8px;">${verfuegLabel(p.verfuegbarkeit)}</div>
+            <p style="color:var(--text-light);font-size:0.88rem;">${esc(p.kurzbeschreibung)}</p>
+            <div style="margin-top:8px;font-size:0.82rem;color:var(--text-light);">${p.bilder.length} Bilder · ${esc(p.status)} · ${p.jahr || '–'}</div>
+          </div>
+          <div class="btn-group" style="flex-shrink:0;">
+            <button class="btn btn-outline btn-sm" onclick="editProjekt(${p.id})">Bearbeiten</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProjekt(${p.id}, '${esc(p.name)}')">Löschen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openNewProjekt() {
+      document.getElementById('pf-id').value = '';
+      document.getElementById('pf-name').value = '';
+      document.getElementById('pf-massstab').value = '';
+      document.getElementById('pf-kurz').value = '';
+      document.getElementById('pf-beschreibung').value = '';
+      document.getElementById('pf-spannweite').value = '';
+      document.getElementById('pf-laenge').value = '';
+      document.getElementById('pf-gewicht').value = '';
+      document.getElementById('pf-antrieb').value = '';
+      document.getElementById('pf-status').value = 'In Arbeit';
+      document.getElementById('pf-verfuegbarkeit').value = 'einzelstueck';
+      document.getElementById('pf-jahr').value = new Date().getFullYear();
+      document.getElementById('pf-bilder-section').style.display = 'none';
+      document.getElementById('modal-title').textContent = 'Neues Projekt';
+      document.getElementById('modal-projekt').classList.add('active');
+    }
+
+    function editProjekt(id) {
+      const p = projekte.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('pf-id').value = p.id;
+      document.getElementById('pf-name').value = p.name;
+      document.getElementById('pf-massstab').value = p.massstab;
+      document.getElementById('pf-kurz').value = p.kurzbeschreibung;
+      document.getElementById('pf-beschreibung').value = p.beschreibung;
+      document.getElementById('pf-spannweite').value = p.spannweite;
+      document.getElementById('pf-laenge').value = p.laenge;
+      document.getElementById('pf-gewicht').value = p.gewicht;
+      document.getElementById('pf-antrieb').value = p.antrieb;
+      document.getElementById('pf-status').value = p.status;
+      document.getElementById('pf-verfuegbarkeit').value = p.verfuegbarkeit || 'einzelstueck';
+      document.getElementById('pf-jahr').value = p.jahr || '';
+      document.getElementById('pf-bilder-section').style.display = 'block';
+      document.getElementById('modal-title').textContent = p.name + ' bearbeiten';
+      renderBilder(p);
+      document.getElementById('modal-projekt').classList.add('active');
+    }
+
+    function renderBilder(p) {
+      const grid = document.getElementById('pf-bilder-grid');
+      grid.innerHTML = p.bilder.map(b => `
+        <div class="image-thumb ${b.is_cover ? 'is-cover' : ''}">
+          <img src="${b.url}">
+          ${b.is_cover ? '<div class="cover-badge">Titelbild</div>' : ''}
+          <div class="image-thumb-actions">
+            ${!b.is_cover ? `<button onclick="setCover(${b.id})">Titelbild</button>` : ''}
+            <button onclick="deleteBild(${b.id})">Löschen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveProjekt() {
+      const id = document.getElementById('pf-id').value;
+      const body = {
+        name: document.getElementById('pf-name').value,
+        massstab: document.getElementById('pf-massstab').value,
+        kurzbeschreibung: document.getElementById('pf-kurz').value,
+        beschreibung: document.getElementById('pf-beschreibung').value,
+        spannweite: document.getElementById('pf-spannweite').value,
+        laenge: document.getElementById('pf-laenge').value,
+        gewicht: document.getElementById('pf-gewicht').value,
+        antrieb: document.getElementById('pf-antrieb').value,
+        status: document.getElementById('pf-status').value,
+        verfuegbarkeit: document.getElementById('pf-verfuegbarkeit').value,
+        jahr: parseInt(document.getElementById('pf-jahr').value) || null
+      };
+
+      if (!body.name) return alert('Name ist erforderlich.');
+
+      const url = id ? `/admin/api/projekte/${id}` : '/admin/api/projekte';
+      const method = id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+
+      if (!id && data.id) {
+        // New project created – reload and open for image upload
+        closeModal();
+        await loadProjekte();
+        editProjekt(data.id);
+        return;
+      }
+
+      closeModal();
+      loadProjekte();
+    }
+
+    async function deleteProjekt(id, name) {
+      if (!confirm(`Projekt "${name}" wirklich löschen? Alle Bilder werden ebenfalls gelöscht.`)) return;
+      await fetch(`/admin/api/projekte/${id}`, { method: 'DELETE' });
+      loadProjekte();
+    }
+
+    // Image upload
+    const uploadArea = document.getElementById('pf-upload-area');
+    const fileInput = document.getElementById('pf-file-input');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+    uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value = ''; });
+
+    async function handleFiles(files) {
+      const id = document.getElementById('pf-id').value;
+      if (!id) return alert('Bitte speichere das Projekt zuerst.');
+
+      const form = new FormData();
+      for (const f of files) form.append('bilder', f);
+
+      uploadArea.innerHTML = '<p>Hochladen...</p>';
+      const res = await fetch(`/admin/api/projekte/${id}/bilder`, { method: 'POST', body: form });
+      uploadArea.innerHTML = '<p>Bilder hierher ziehen oder klicken zum Hochladen</p><p style="font-size:0.78rem;">(JPG, PNG, WebP – max. 10 MB)</p><input type="file" id="pf-file-input" multiple accept="image/*">';
+
+      // Re-attach file input listener
+      document.getElementById('pf-file-input').addEventListener('change', function() { handleFiles(this.files); this.value = ''; });
+
+      if (res.ok) {
+        const p = projekte.find(x => x.id === parseInt(id));
+        if (p) { p.bilder = await res.json(); renderBilder(p); }
+      }
+    }
+
+    async function setCover(bildId) {
+      const id = document.getElementById('pf-id').value;
+      await fetch(`/admin/api/projekt-bilder/${bildId}/cover`, { method: 'PUT' });
+      // Reload project images
+      const res = await fetch('/admin/api/projekte');
+      projekte = await res.json();
+      const p = projekte.find(x => x.id === parseInt(id));
+      if (p) renderBilder(p);
+    }
+
+    async function deleteBild(bildId) {
+      if (!confirm('Bild löschen?')) return;
+      const id = document.getElementById('pf-id').value;
+      await fetch(`/admin/api/projekt-bilder/${bildId}`, { method: 'DELETE' });
+      const res = await fetch('/admin/api/projekte');
+      projekte = await res.json();
+      const p = projekte.find(x => x.id === parseInt(id));
+      if (p) renderBilder(p);
+    }
+
+    function closeModal() {
+      document.getElementById('modal-projekt').classList.remove('active');
+    }
+
+    // Verfügbarkeits-Hint
+    document.getElementById('pf-verfuegbarkeit').addEventListener('change', function() {
+      document.getElementById('pf-verfueg-hint').style.display = this.value !== 'einzelstueck' ? 'block' : 'none';
+    });
+
+    checkAuth();
+    loadProjekte();
+  </script>
+</body>
+</html>

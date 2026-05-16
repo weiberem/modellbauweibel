@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Modellbau Weibel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <a href="/admin/" class="sidebar-logo">
+        <svg viewBox="0 0 36 36" width="28" height="28"><path d="M33 16l-15-14-3 3 4 5-12 4-5-3-2 2 6 6-3 3c-1 1-1.5 3-.5 4s3 .5 4-.5l3-3 6 6 2-2-3-5 4-12 5 4z" fill="#c8872b"/></svg>
+        Modellbau <span>Weibel</span>
+      </a>
+      <ul class="sidebar-nav" id="sidebar-nav">
+        <li><a href="/admin/" class="active" data-page="dashboard">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a></li>
+        <li><a href="/admin/projekte.html" data-page="projekte">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Projekte
+        </a></li>
+        <li><a href="/admin/produkte.html" data-page="produkte">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          Produkte / Shop
+        </a></li>
+        <li><a href="/admin/bestellungen.html" data-page="bestellungen">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Bestellungen
+        </a></li>
+      </ul>
+      <div class="sidebar-bottom">
+        <a href="/" class="sidebar-nav" style="display:block;padding:8px 0;">
+          <span style="color:rgba(255,255,255,0.5);font-size:0.82rem;">← Zur Website</span>
+        </a>
+        <button onclick="logout()" class="btn btn-outline btn-sm btn-full" style="margin-top:8px;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.2);">Abmelden</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Willkommen im Admin-Bereich.</p>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-projekte">–</div>
+          <div class="stat-label">Projekte</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-produkte">–</div>
+          <div class="stat-label">Produkte</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-bestellungen">–</div>
+          <div class="stat-label">Bestellungen</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Letzte Bestellungen</h3>
+          <a href="/admin/bestellungen.html" class="btn btn-outline btn-sm">Alle anzeigen</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nr.</th><th>Kunde</th><th>Total</th><th>Status</th><th>Datum</th></tr></thead>
+            <tbody id="recent-orders"><tr><td colspan="5" style="text-align:center;color:var(--text-light);">Laden...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Passwort ändern</h3>
+        </div>
+        <form id="pw-form" style="max-width:400px;">
+          <div class="form-group">
+            <label>Aktuelles Passwort</label>
+            <input type="password" id="pw-current" required>
+          </div>
+          <div class="form-group">
+            <label>Neues Passwort</label>
+            <input type="password" id="pw-new" required minlength="6">
+          </div>
+          <div id="pw-msg"></div>
+          <button type="submit" class="btn btn-primary">Passwort ändern</button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function checkAuth() {
+      const res = await fetch('/admin/check');
+      const data = await res.json();
+      if (!data.loggedIn) window.location.href = '/admin/login.html';
+    }
+
+    async function logout() {
+      await fetch('/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login.html';
+    }
+
+    async function loadDashboard() {
+      try {
+        const [projekte, produkte, bestellungen] = await Promise.all([
+          fetch('/admin/api/projekte').then(r => r.json()),
+          fetch('/admin/api/produkte').then(r => r.json()),
+          fetch('/admin/api/bestellungen').then(r => r.json())
+        ]);
+
+        document.getElementById('stat-projekte').textContent = projekte.length;
+        document.getElementById('stat-produkte').textContent = produkte.length;
+        document.getElementById('stat-bestellungen').textContent = bestellungen.length;
+
+        const tbody = document.getElementById('recent-orders');
+        if (bestellungen.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-light);">Noch keine Bestellungen.</td></tr>';
+        } else {
+          tbody.innerHTML = bestellungen.slice(0, 5).map(b => `
+            <tr>
+              <td><strong>${b.bestell_nr}</strong></td>
+              <td>${esc(b.kunde_name)}</td>
+              <td>CHF ${b.total.toFixed(2)}</td>
+              <td><span class="badge ${b.status === 'Neu' ? 'badge-warning' : b.status === 'Versendet' ? 'badge-success' : 'badge-info'}">${b.status}</span></td>
+              <td>${new Date(b.created_at).toLocaleDateString('de-CH')}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    document.getElementById('pw-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('pw-msg');
+      const res = await fetch('/admin/passwort', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current: document.getElementById('pw-current').value,
+          newPassword: document.getElementById('pw-new').value
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        msg.innerHTML = '<div class="success-msg">Passwort geändert!</div>';
+        e.target.reset();
+      } else {
+        msg.innerHTML = `<div class="error-msg">${data.error}</div>`;
+      }
+    });
+
+    checkAuth();
+    loadDashboard();
+  </script>
+</body>
+</html>

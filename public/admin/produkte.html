@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produkte verwalten – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <a href="/admin/" class="sidebar-logo">
+        <svg viewBox="0 0 36 36" width="28" height="28"><path d="M33 16l-15-14-3 3 4 5-12 4-5-3-2 2 6 6-3 3c-1 1-1.5 3-.5 4s3 .5 4-.5l3-3 6 6 2-2-3-5 4-12 5 4z" fill="#c8872b"/></svg>
+        Modellbau <span>Weibel</span>
+      </a>
+      <ul class="sidebar-nav">
+        <li><a href="/admin/"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a></li>
+        <li><a href="/admin/projekte.html"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Projekte</a></li>
+        <li><a href="/admin/produkte.html" class="active"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Produkte / Shop</a></li>
+        <li><a href="/admin/bestellungen.html"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Bestellungen</a></li>
+      </ul>
+      <div class="sidebar-bottom">
+        <a href="/" style="color:rgba(255,255,255,0.5);font-size:0.82rem;text-decoration:none;">← Zur Website</a>
+        <button onclick="logout()" class="btn btn-outline btn-sm btn-full" style="margin-top:8px;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.2);">Abmelden</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+        <div>
+          <h1 class="page-title" style="margin-bottom:4px;">Produkte / Shop</h1>
+          <p class="page-subtitle" style="margin-bottom:0;">Bausätze, Baupläne und Zubehör verwalten.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewProdukt()">+ Neues Produkt</button>
+      </div>
+
+      <div id="produkte-list"></div>
+
+      <!-- Modal -->
+      <div class="admin-modal-bg" id="modal-produkt">
+        <div class="admin-modal" style="max-width:800px;">
+          <div class="admin-modal-header">
+            <h3 id="modal-title-p">Neues Produkt</h3>
+            <button class="admin-modal-close" onclick="closeModal()">&times;</button>
+          </div>
+          <div class="admin-modal-body">
+            <form id="produkt-form">
+              <input type="hidden" id="prod-id">
+              <div class="form-group">
+                <label>Produktname *</label>
+                <input type="text" id="prod-name" required placeholder="z.B. F-20 Tigershark – CNC-Holzbaukasten">
+              </div>
+              <div class="form-group">
+                <label>Kurzbeschreibung</label>
+                <input type="text" id="prod-kurz" placeholder="Kurzer Text für die Übersicht">
+              </div>
+              <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea id="prod-beschreibung" placeholder="Ausführliche Produktbeschreibung..."></textarea>
+              </div>
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label>Kategorie</label>
+                  <select id="prod-kategorie">
+                    <option value="Bausatz">Bausatz</option>
+                    <option value="Bauplan">Bauplan</option>
+                    <option value="Servo">Servo</option>
+                    <option value="Akku">Akku / Batterie</option>
+                    <option value="Motor">Motor</option>
+                    <option value="Regler">Regler</option>
+                    <option value="Zubehoer">Zubehör</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Preis (CHF)</label>
+                  <input type="number" id="prod-preis" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                  <label>Lagerbestand</label>
+                  <input type="number" id="prod-lager" min="0" placeholder="0">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="prod-aktiv" checked style="width:auto;margin-right:8px;">
+                  Im Shop sichtbar (aktiv)
+                </label>
+              </div>
+              <div class="form-group">
+                <label>Lieferumfang (ein Punkt pro Zeile)</label>
+                <textarea id="prod-inhalt" rows="4" placeholder="CNC-gefräste Holzteile&#10;Kleinteile&#10;Baupläne"></textarea>
+                <div class="form-hint">Jede Zeile wird als eigener Punkt in der Auflistung angezeigt.</div>
+              </div>
+
+              <!-- Bilder -->
+              <div id="prod-bilder-section" style="display:none;">
+                <h4 style="margin-bottom:12px;">Produktbilder</h4>
+                <div class="upload-area" id="prod-upload-area">
+                  <p>Bilder hierher ziehen oder klicken</p>
+                  <input type="file" id="prod-file-input" multiple accept="image/*">
+                </div>
+                <div class="image-grid" id="prod-bilder-grid"></div>
+              </div>
+            </form>
+          </div>
+          <div class="admin-modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveProdukt()">Speichern</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let produkte = [];
+
+    async function checkAuth() {
+      const res = await fetch('/admin/check');
+      const data = await res.json();
+      if (!data.loggedIn) window.location.href = '/admin/login.html';
+    }
+    async function logout() { await fetch('/admin/logout', { method: 'POST' }); window.location.href = '/admin/login.html'; }
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    async function loadProdukte() {
+      const res = await fetch('/admin/api/produkte');
+      produkte = await res.json();
+      renderList();
+    }
+
+    function renderList() {
+      const el = document.getElementById('produkte-list');
+      if (produkte.length === 0) {
+        el.innerHTML = '<div class="card" style="text-align:center;color:var(--text-light);">Noch keine Produkte.</div>';
+        return;
+      }
+      el.innerHTML = produkte.map(p => `
+        <div class="card" style="display:flex;gap:20px;align-items:flex-start;">
+          <div style="width:120px;height:85px;border-radius:8px;overflow:hidden;background:var(--bg);flex-shrink:0;">
+            ${p.bilder.length ? `<img src="${p.bilder.find(b=>b.is_cover)?.url || p.bilder[0].url}" style="width:100%;height:100%;object-fit:cover;">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:0.75rem;">Kein Bild</div>'}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <strong>${esc(p.name)}</strong>
+              ${!p.ist_aktiv ? '<span class="badge badge-danger">Inaktiv</span>' : ''}
+            </div>
+            <div style="display:flex;gap:12px;font-size:0.88rem;color:var(--text-light);">
+              <span>CHF ${p.preis.toFixed(2)}</span>
+              <span>Lager: <strong style="color:${p.lagerbestand > 0 ? 'var(--success)' : 'var(--danger)'}">${p.lagerbestand}</strong></span>
+              <span class="badge ${p.kategorie === 'Bausatz' ? 'badge-success' : 'badge-info'}">${p.kategorie}</span>
+            </div>
+          </div>
+          <div class="btn-group" style="flex-shrink:0;">
+            <button class="btn btn-outline btn-sm" onclick="editProdukt(${p.id})">Bearbeiten</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProdukt(${p.id}, '${esc(p.name)}')">Löschen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openNewProdukt() {
+      document.getElementById('prod-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-kurz').value = '';
+      document.getElementById('prod-beschreibung').value = '';
+      document.getElementById('prod-kategorie').value = 'Bausatz';
+      document.getElementById('prod-preis').value = '';
+      document.getElementById('prod-lager').value = '0';
+      document.getElementById('prod-aktiv').checked = true;
+      document.getElementById('prod-inhalt').value = '';
+      document.getElementById('prod-bilder-section').style.display = 'none';
+      document.getElementById('modal-title-p').textContent = 'Neues Produkt';
+      document.getElementById('modal-produkt').classList.add('active');
+    }
+
+    function editProdukt(id) {
+      const p = produkte.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name;
+      document.getElementById('prod-kurz').value = p.kurzbeschreibung;
+      document.getElementById('prod-beschreibung').value = p.beschreibung;
+      document.getElementById('prod-kategorie').value = p.kategorie;
+      document.getElementById('prod-preis').value = p.preis;
+      document.getElementById('prod-lager').value = p.lagerbestand;
+      document.getElementById('prod-aktiv').checked = !!p.ist_aktiv;
+      document.getElementById('prod-inhalt').value = (p.inhalt || []).join('\n');
+      document.getElementById('prod-bilder-section').style.display = 'block';
+      document.getElementById('modal-title-p').textContent = p.name + ' bearbeiten';
+      renderBilder(p);
+      document.getElementById('modal-produkt').classList.add('active');
+    }
+
+    function renderBilder(p) {
+      const grid = document.getElementById('prod-bilder-grid');
+      grid.innerHTML = p.bilder.map(b => `
+        <div class="image-thumb ${b.is_cover ? 'is-cover' : ''}">
+          <img src="${b.url}">
+          ${b.is_cover ? '<div class="cover-badge">Titelbild</div>' : ''}
+          <div class="image-thumb-actions">
+            ${!b.is_cover ? `<button onclick="setCover(${b.id})">Titelbild</button>` : ''}
+            <button onclick="deleteBild(${b.id})">Löschen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveProdukt() {
+      const id = document.getElementById('prod-id').value;
+      const inhaltText = document.getElementById('prod-inhalt').value;
+      const body = {
+        name: document.getElementById('prod-name').value,
+        kurzbeschreibung: document.getElementById('prod-kurz').value,
+        beschreibung: document.getElementById('prod-beschreibung').value,
+        kategorie: document.getElementById('prod-kategorie').value,
+        preis: parseFloat(document.getElementById('prod-preis').value) || 0,
+        lagerbestand: parseInt(document.getElementById('prod-lager').value) || 0,
+        ist_aktiv: document.getElementById('prod-aktiv').checked ? 1 : 0,
+        inhalt: inhaltText.split('\n').map(s => s.trim()).filter(Boolean)
+      };
+
+      if (!body.name) return alert('Name ist erforderlich.');
+
+      const url = id ? `/admin/api/produkte/${id}` : '/admin/api/produkte';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+
+      if (!id && data.id) {
+        closeModal();
+        await loadProdukte();
+        editProdukt(data.id);
+        return;
+      }
+      closeModal();
+      loadProdukte();
+    }
+
+    async function deleteProdukt(id, name) {
+      if (!confirm(`Produkt "${name}" löschen?`)) return;
+      await fetch(`/admin/api/produkte/${id}`, { method: 'DELETE' });
+      loadProdukte();
+    }
+
+    // Image upload
+    const uploadArea = document.getElementById('prod-upload-area');
+    const fileInput = document.getElementById('prod-file-input');
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+    uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value = ''; });
+
+    async function handleFiles(files) {
+      const id = document.getElementById('prod-id').value;
+      if (!id) return alert('Bitte speichere das Produkt zuerst.');
+      const form = new FormData();
+      for (const f of files) form.append('bilder', f);
+
+      const res = await fetch(`/admin/api/produkte/${id}/bilder`, { method: 'POST', body: form });
+      if (res.ok) {
+        const p = produkte.find(x => x.id === parseInt(id));
+        if (p) { p.bilder = await res.json(); renderBilder(p); }
+      }
+    }
+
+    async function setCover(bildId) {
+      const id = document.getElementById('prod-id').value;
+      await fetch(`/admin/api/produkt-bilder/${bildId}/cover`, { method: 'PUT' });
+      const res = await fetch('/admin/api/produkte');
+      produkte = await res.json();
+      const p = produkte.find(x => x.id === parseInt(id));
+      if (p) renderBilder(p);
+    }
+
+    async function deleteBild(bildId) {
+      if (!confirm('Bild löschen?')) return;
+      const id = document.getElementById('prod-id').value;
+      await fetch(`/admin/api/produkt-bilder/${bildId}`, { method: 'DELETE' });
+      const res = await fetch('/admin/api/produkte');
+      produkte = await res.json();
+      const p = produkte.find(x => x.id === parseInt(id));
+      if (p) renderBilder(p);
+    }
+
+    function closeModal() { document.getElementById('modal-produkt').classList.remove('active'); }
+
+    checkAuth();
+    loadProdukte();
+  </script>
+</body>
+</html>

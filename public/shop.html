@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop – Modellbau Weibel</title>
+  <meta name="description" content="CNC-Holzbausätze, Baupläne und Modellbau-Zubehör – Eigenkonstruktionen von Martin Weibel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <div class="page-header">
+    <div class="container">
+      <span class="section-label" style="color:var(--accent);">Shop</span>
+      <h1>Bausätze, Pläne &amp; Zubehör</h1>
+      <p>CNC-Holzbausätze, Baupläne und Modellbau-Zubehör. Direkt vom Konstrukteur.</p>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <section class="section" style="padding-bottom:0;">
+    <div class="container">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;" id="category-filters">
+        <button class="filter-btn active" data-cat="alle">Alle</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section class="section" style="padding-top:16px;">
+    <div class="container">
+      <div class="products-grid" id="products-grid"></div>
+    </div>
+  </section>
+
+  <!-- Info -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text fade-in">
+          <span class="section-label">Information</span>
+          <h2>Bestellung &amp; Versand</h2>
+          <p>Bestellen Sie direkt über den Warenkorb. Die Zahlung erfolgt bequem per PayPal oder Kreditkarte.</p>
+          <p>In Deutschland sind unsere Bausätze exklusiv über <strong>Der Holzflieger</strong> erhältlich.</p>
+          <p>Jeder Bausatz wird einzeln gefertigt und sorgfältig verpackt.</p>
+        </div>
+        <div class="about-image fade-in">
+          <div class="img-placeholder" style="position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div class="about-image-badge">Schweizer Qualität</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    let allProducts = [];
+
+    function renderShopCard(p) {
+      const hasImage = p.titelbild;
+      const inhalt = Array.isArray(p.inhalt) ? p.inhalt : [];
+      const outOfStock = p.lagerbestand <= 0;
+
+      return `
+        <article class="product-card fade-in">
+          <div class="product-card-image">
+            ${hasImage ? `<img src="${p.titelbild}" alt="${esc(p.name)}" loading="lazy">` : ''}
+            <div class="img-placeholder" ${hasImage ? 'style="display:none"' : ''}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <span class="product-badge ${p.kategorie === 'Bausatz' ? 'bausatz' : 'bauplan'}">${esc(p.kategorie)}</span>
+            ${outOfStock ? '<span class="product-badge" style="background:var(--danger);left:auto;right:16px;">Ausverkauft</span>' : `<span class="product-badge verfuegbar" style="left:auto;right:16px;">Lager: ${p.lagerbestand}</span>`}
+          </div>
+          <div class="product-card-body">
+            <h3>${esc(p.name)}</h3>
+            <p>${esc(p.kurzbeschreibung)}</p>
+            ${inhalt.length > 0 ? `
+              <ul class="product-inhalt">
+                ${inhalt.slice(0, 4).map(i => `<li>${esc(i)}</li>`).join('')}
+                ${inhalt.length > 4 ? `<li>und ${inhalt.length - 4} weitere...</li>` : ''}
+              </ul>
+            ` : ''}
+            <div class="product-price">
+              <span class="price">CHF ${p.preis.toFixed(2)}</span>
+              ${outOfStock
+                ? '<span style="color:var(--text-light);font-size:0.85rem;">Nicht verfügbar</span>'
+                : `<button class="btn btn-dark" onclick='Cart.add(${JSON.stringify({id:p.id,name:p.name,preis:p.preis,titelbild:p.titelbild,lagerbestand:p.lagerbestand}).replace(/'/g, "&#39;")})'>In den Warenkorb</button>`
+              }
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function filterProducts(cat) {
+      const filtered = cat === 'alle' ? allProducts : allProducts.filter(p => p.kategorie === cat);
+      document.getElementById('products-grid').innerHTML = filtered.map(renderShopCard).join('');
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+      initScrollAnimations();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const res = await fetch('/api/produkte');
+      allProducts = await res.json();
+
+      // Build category filters
+      const cats = [...new Set(allProducts.map(p => p.kategorie))];
+      const filterDiv = document.getElementById('category-filters');
+      cats.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.dataset.cat = c;
+        btn.textContent = c;
+        btn.onclick = () => filterProducts(c);
+        filterDiv.appendChild(btn);
+      });
+      filterDiv.querySelector('[data-cat="alle"]').onclick = () => filterProducts('alle');
+
+      document.getElementById('products-grid').innerHTML = allProducts.map(renderShopCard).join('');
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>

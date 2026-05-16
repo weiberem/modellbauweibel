@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login – Modellbau Weibel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 36 36" width="48" height="48"><path d="M33 16l-15-14-3 3 4 5-12 4-5-3-2 2 6 6-3 3c-1 1-1.5 3-.5 4s3 .5 4-.5l3-3 6 6 2-2-3-5 4-12 5 4z" fill="#c8872b"/></svg>
+      <h1>Modellbau Weibel</h1>
+      <p>Admin-Bereich</p>
+    </div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Benutzername</label>
+        <input type="text" id="username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Passwort</label>
+        <input type="password" id="password" required>
+      </div>
+      <div id="error-msg" class="error-msg" style="display:none;"></div>
+      <button type="submit" class="btn btn-primary btn-full">Einloggen</button>
+    </form>
+    <a href="/" class="back-link">Zurück zur Website</a>
+  </div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('error-msg');
+      errEl.style.display = 'none';
+      try {
+        const res = await fetch('/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = '/admin/';
+        } else {
+          errEl.textContent = data.error;
+          errEl.style.display = 'block';
+        }
+      } catch {
+        errEl.textContent = 'Verbindungsfehler.';
+        errEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projekte – Modellbau Weibel</title>
+  <meta name="description" content="Alle Modellflugzeug-Projekte von Martin Weibel – Eigenkonstruktionen aus Holz.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .verfueg-badges { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+    .verfueg-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+    .verfueg-badge.einzelstueck { background: #dbeafe; color: #2563eb; }
+    .verfueg-badge.bausatz { background: #dcfce7; color: #16a34a; }
+    .verfueg-badge.bauplan { background: #fef3c7; color: #d97706; }
+    .filter-btn { padding: 8px 20px; border-radius: 20px; border: 2px solid var(--border); background: #fff; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <div class="page-header">
+    <div class="container">
+      <span class="section-label" style="color:var(--accent);">Portfolio</span>
+      <h1>Meine Projekte</h1>
+      <p>Eigenkonstruktionen und Modelle – vom ersten Entwurf bis zum Erstflug.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="projects-grid" id="projects-grid"></div>
+    </div>
+  </section>
+
+  <div class="modal-overlay" id="project-modal" onclick="closeProjectModal()"></div>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/shop.js"></script>
+  <script>
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function verfuegBadges(v) {
+      const badges = [];
+      if (v === 'einzelstueck' || !v) badges.push('<span class="verfueg-badge einzelstueck">Einzelstück</span>');
+      if (v === 'bausatz' || v === 'bausatz_bauplan') badges.push('<a href="shop.html" class="verfueg-badge bausatz">Bausatz im Shop →</a>');
+      if (v === 'bauplan' || v === 'bausatz_bauplan') badges.push('<a href="shop.html" class="verfueg-badge bauplan">Bauplan im Shop →</a>');
+      return badges.join('');
+    }
+
+    function renderCard(p) {
+      const hasImage = p.titelbild;
+      return `
+        <article class="project-card fade-in" onclick="openDetail('${p.slug}')">
+          <div class="project-card-image">
+            ${hasImage ? `<img src="${p.titelbild}" alt="${esc(p.name)}" loading="lazy">` : ''}
+            <div class="img-placeholder" style="${hasImage ? 'display:none;' : ''}position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            ${p.massstab ? `<span class="project-card-badge">M ${esc(p.massstab)}</span>` : ''}
+          </div>
+          <div class="project-card-body">
+            <h3>${esc(p.name)}</h3>
+            <div class="project-card-meta">${p.massstab ? `Massstab ${esc(p.massstab)}` : ''} ${p.status ? `&middot; ${esc(p.status)}` : ''} ${p.jahr ? `&middot; ${p.jahr}` : ''}</div>
+            <p>${esc(p.kurzbeschreibung)}</p>
+            <div class="project-card-specs">
+              ${p.spannweite ? `<div class="spec-item"><span class="spec-label">Spannweite</span><span class="spec-value">${esc(p.spannweite)}</span></div>` : ''}
+              ${p.laenge ? `<div class="spec-item"><span class="spec-label">Länge</span><span class="spec-value">${esc(p.laenge)}</span></div>` : ''}
+              ${p.gewicht ? `<div class="spec-item"><span class="spec-label">Gewicht</span><span class="spec-value">${esc(p.gewicht)}</span></div>` : ''}
+            </div>
+            <div class="verfueg-badges" onclick="event.stopPropagation();">${verfuegBadges(p.verfuegbarkeit)}</div>
+          </div>
+        </article>
+      `;
+    }
+
+    let allProjects = [];
+
+    async function openDetail(slug) {
+      const p = allProjects.find(x => x.slug === slug);
+      if (!p) return;
+      const modal = document.getElementById('project-modal');
+      modal.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            ${p.titelbild ? `<img src="${p.titelbild}" alt="${esc(p.name)}">` : '<div class="img-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>'}
+            <button class="modal-close" onclick="closeProjectModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <h2>${esc(p.name)}</h2>
+            <div class="project-card-meta">${p.massstab ? `Massstab ${esc(p.massstab)}` : ''} ${p.status ? `&middot; ${esc(p.status)}` : ''} ${p.jahr ? `&middot; ${p.jahr}` : ''}</div>
+            <div class="verfueg-badges" style="margin-bottom:20px;">${verfuegBadges(p.verfuegbarkeit)}</div>
+            <p class="description">${esc(p.beschreibung)}</p>
+            <div class="modal-specs-grid">
+              ${p.spannweite ? `<div class="modal-spec"><div class="spec-label">Spannweite</div><div class="spec-value">${esc(p.spannweite)}</div></div>` : ''}
+              ${p.laenge ? `<div class="modal-spec"><div class="spec-label">Länge</div><div class="spec-value">${esc(p.laenge)}</div></div>` : ''}
+              ${p.gewicht ? `<div class="modal-spec"><div class="spec-label">Gewicht</div><div class="spec-value">${esc(p.gewicht)}</div></div>` : ''}
+              ${p.antrieb ? `<div class="modal-spec"><div class="spec-label">Antrieb</div><div class="spec-value">${esc(p.antrieb)}</div></div>` : ''}
+            </div>
+            ${p.bilder && p.bilder.length > 0 ? `
+              <h4>Galerie</h4>
+              <div class="modal-gallery">
+                ${p.bilder.map(b => `<img src="${b.url}" alt="${esc(p.name)}" loading="lazy" onclick="openLightbox('${b.url}')">`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const res = await fetch('/api/projekte');
+      allProjects = await res.json();
+      document.getElementById('projects-grid').innerHTML = allProjects.map(renderCard).join('');
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>
