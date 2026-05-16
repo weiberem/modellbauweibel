@@ -11,13 +11,32 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     .verfueg-badges { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
-    .verfueg-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+    .verfueg-badge { display: inline-flex; align-items: center; gap: 4px; padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
     .verfueg-badge.einzelstueck { background: #dbeafe; color: #2563eb; }
     .verfueg-badge.bausatz { background: #dcfce7; color: #16a34a; }
+    .verfueg-badge.bausatz:hover { background: #16a34a; color: #fff; }
     .verfueg-badge.bauplan { background: #fef3c7; color: #d97706; }
-    .filter-btn { padding: 8px 20px; border-radius: 20px; border: 2px solid var(--border); background: #fff; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .verfueg-badge.bauplan:hover { background: #d97706; color: #fff; }
+
+    .section-divider { margin: 64px 0 48px; text-align: center; position: relative; }
+    .section-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); }
+    .section-divider h2 { position: relative; display: inline-block; background: var(--bg); padding: 0 32px; font-size: 1.4rem; color: var(--primary); }
+    .section-divider p { color: var(--text-light); font-size: 0.95rem; margin-top: 8px; }
+    .section-divider .count-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-left: 8px; vertical-align: middle; }
+
+    .shop-link-box { margin-top: 20px; padding: 16px 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; }
+    .shop-link-box h4 { font-size: 0.85rem; color: #16a34a; margin-bottom: 10px; }
+    .shop-link-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+    .shop-link-item + .shop-link-item { border-top: 1px solid #dcfce7; }
+    .shop-link-item img { width: 48px; height: 36px; border-radius: 6px; object-fit: cover; background: #e5e7eb; flex-shrink: 0; }
+    .shop-link-item .no-img { width: 48px; height: 36px; border-radius: 6px; background: #e5e7eb; flex-shrink: 0; }
+    .shop-link-item-info { flex: 1; min-width: 0; }
+    .shop-link-item-info .name { font-size: 0.85rem; font-weight: 600; color: var(--primary); }
+    .shop-link-item-info .meta { font-size: 0.78rem; color: var(--text-light); }
+    .shop-link-item a { font-size: 0.78rem; font-weight: 600; color: #16a34a; text-decoration: none; white-space: nowrap; padding: 5px 14px; border: 1.5px solid #16a34a; border-radius: 8px; transition: all 0.2s; }
+    .shop-link-item a:hover { background: #16a34a; color: #fff; }
+
+    .status-badge-inprogress { position: absolute; top: 16px; left: 16px; background: rgba(217, 119, 6, 0.9); color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; }
   </style>
 </head>
 <body>
@@ -33,7 +52,23 @@
 
   <section class="section">
     <div class="container">
-      <div class="projects-grid" id="projects-grid"></div>
+      <!-- Aktuelle Projekte -->
+      <div id="section-aktuell" style="display:none;">
+        <div class="section-divider" style="margin-top:0;">
+          <h2>Aktuelle Projekte <span class="count-badge" id="count-aktuell">0</span></h2>
+          <p>Daran wird gerade gebaut</p>
+        </div>
+        <div class="projects-grid" id="grid-aktuell"></div>
+      </div>
+
+      <!-- Abgeschlossene Projekte -->
+      <div id="section-fertig">
+        <div class="section-divider" id="divider-fertig">
+          <h2>Abgeschlossene Projekte <span class="count-badge" id="count-fertig">0</span></h2>
+          <p>Fertiggestellte Modelle aus meiner Werkstatt</p>
+        </div>
+        <div class="projects-grid" id="grid-fertig"></div>
+      </div>
     </div>
   </section>
 
@@ -46,16 +81,36 @@
   <script>
     function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-    function verfuegBadges(v) {
-      const badges = [];
-      if (v === 'einzelstueck' || !v) badges.push('<span class="verfueg-badge einzelstueck">Einzelstück</span>');
-      if (v === 'bausatz' || v === 'bausatz_bauplan') badges.push('<a href="shop.html" class="verfueg-badge bausatz">Bausatz im Shop →</a>');
-      if (v === 'bauplan' || v === 'bausatz_bauplan') badges.push('<a href="shop.html" class="verfueg-badge bauplan">Bauplan im Shop →</a>');
-      return badges.join('');
+    function shopLinkBox(produkte) {
+      if (!produkte || produkte.length === 0) return '';
+      return `
+        <div class="shop-link-box" onclick="event.stopPropagation();">
+          <h4>Im Shop erhältlich</h4>
+          ${produkte.map(pr => `
+            <div class="shop-link-item">
+              ${pr.titelbild ? `<img src="${pr.titelbild}" alt="${esc(pr.name)}">` : '<div class="no-img"></div>'}
+              <div class="shop-link-item-info">
+                <div class="name">${esc(pr.name)}</div>
+                <div class="meta">${esc(pr.kategorie)} · CHF ${pr.preis.toFixed(2)} · ${pr.lagerbestand > 0 ? `${pr.lagerbestand} an Lager` : 'Ausverkauft'}</div>
+              </div>
+              <a href="shop.html#${pr.slug}">Zum Produkt →</a>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function verfuegBadgesSimple(v) {
+      if (v === 'einzelstueck' || !v) return '<span class="verfueg-badge einzelstueck">Einzelstück</span>';
+      const parts = [];
+      if (v === 'bausatz' || v === 'bausatz_bauplan') parts.push('<span class="verfueg-badge bausatz">Bausatz erhältlich</span>');
+      if (v === 'bauplan' || v === 'bausatz_bauplan') parts.push('<span class="verfueg-badge bauplan">Bauplan erhältlich</span>');
+      return parts.join('');
     }
 
     function renderCard(p) {
       const hasImage = p.titelbild;
+      const isActive = p.status === 'In Arbeit' || p.status === 'Geplant';
       return `
         <article class="project-card fade-in" onclick="openDetail('${p.slug}')">
           <div class="project-card-image">
@@ -64,17 +119,19 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             </div>
             ${p.massstab ? `<span class="project-card-badge">M ${esc(p.massstab)}</span>` : ''}
+            ${isActive ? '<span class="status-badge-inprogress">In Arbeit</span>' : ''}
           </div>
           <div class="project-card-body">
             <h3>${esc(p.name)}</h3>
-            <div class="project-card-meta">${p.massstab ? `Massstab ${esc(p.massstab)}` : ''} ${p.status ? `&middot; ${esc(p.status)}` : ''} ${p.jahr ? `&middot; ${p.jahr}` : ''}</div>
+            <div class="project-card-meta">${p.massstab ? `Massstab ${esc(p.massstab)}` : ''} ${p.jahr ? `&middot; ${p.jahr}` : ''}</div>
             <p>${esc(p.kurzbeschreibung)}</p>
             <div class="project-card-specs">
               ${p.spannweite ? `<div class="spec-item"><span class="spec-label">Spannweite</span><span class="spec-value">${esc(p.spannweite)}</span></div>` : ''}
               ${p.laenge ? `<div class="spec-item"><span class="spec-label">Länge</span><span class="spec-value">${esc(p.laenge)}</span></div>` : ''}
               ${p.gewicht ? `<div class="spec-item"><span class="spec-label">Gewicht</span><span class="spec-value">${esc(p.gewicht)}</span></div>` : ''}
             </div>
-            <div class="verfueg-badges" onclick="event.stopPropagation();">${verfuegBadges(p.verfuegbarkeit)}</div>
+            <div class="verfueg-badges" onclick="event.stopPropagation();">${verfuegBadgesSimple(p.verfuegbarkeit)}</div>
+            ${shopLinkBox(p.passende_produkte)}
           </div>
         </article>
       `;
@@ -94,8 +151,8 @@
           </div>
           <div class="modal-body">
             <h2>${esc(p.name)}</h2>
-            <div class="project-card-meta">${p.massstab ? `Massstab ${esc(p.massstab)}` : ''} ${p.status ? `&middot; ${esc(p.status)}` : ''} ${p.jahr ? `&middot; ${p.jahr}` : ''}</div>
-            <div class="verfueg-badges" style="margin-bottom:20px;">${verfuegBadges(p.verfuegbarkeit)}</div>
+            <div class="project-card-meta">${p.massstab ? `Massstab ${esc(p.massstab)}` : ''} &middot; ${esc(p.status)} ${p.jahr ? `&middot; ${p.jahr}` : ''}</div>
+            <div class="verfueg-badges" style="margin-bottom:20px;">${verfuegBadgesSimple(p.verfuegbarkeit)}</div>
             <p class="description">${esc(p.beschreibung)}</p>
             <div class="modal-specs-grid">
               ${p.spannweite ? `<div class="modal-spec"><div class="spec-label">Spannweite</div><div class="spec-value">${esc(p.spannweite)}</div></div>` : ''}
@@ -103,8 +160,23 @@
               ${p.gewicht ? `<div class="modal-spec"><div class="spec-label">Gewicht</div><div class="spec-value">${esc(p.gewicht)}</div></div>` : ''}
               ${p.antrieb ? `<div class="modal-spec"><div class="spec-label">Antrieb</div><div class="spec-value">${esc(p.antrieb)}</div></div>` : ''}
             </div>
+            ${p.passende_produkte && p.passende_produkte.length > 0 ? `
+              <div class="shop-link-box" style="margin-top:28px;">
+                <h4>Dieses Modell ist im Shop erhältlich</h4>
+                ${p.passende_produkte.map(pr => `
+                  <div class="shop-link-item">
+                    ${pr.titelbild ? `<img src="${pr.titelbild}" alt="${esc(pr.name)}">` : '<div class="no-img"></div>'}
+                    <div class="shop-link-item-info">
+                      <div class="name">${esc(pr.name)}</div>
+                      <div class="meta">${esc(pr.kategorie)} · CHF ${pr.preis.toFixed(2)} · ${pr.lagerbestand > 0 ? pr.lagerbestand + ' an Lager' : 'Ausverkauft'}</div>
+                    </div>
+                    <a href="shop.html#${pr.slug}">Zum Produkt →</a>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
             ${p.bilder && p.bilder.length > 0 ? `
-              <h4>Galerie</h4>
+              <h4 style="margin-top:28px;">Galerie</h4>
               <div class="modal-gallery">
                 ${p.bilder.map(b => `<img src="${b.url}" alt="${esc(p.name)}" loading="lazy" onclick="openLightbox('${b.url}')">`).join('')}
               </div>
@@ -119,7 +191,26 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const res = await fetch('/api/projekte');
       allProjects = await res.json();
-      document.getElementById('projects-grid').innerHTML = allProjects.map(renderCard).join('');
+
+      const aktuell = allProjects.filter(p => p.status === 'In Arbeit' || p.status === 'Geplant');
+      const fertig = allProjects.filter(p => p.status === 'Abgeschlossen');
+
+      // Aktuelle Projekte
+      if (aktuell.length > 0) {
+        document.getElementById('section-aktuell').style.display = 'block';
+        document.getElementById('count-aktuell').textContent = aktuell.length;
+        document.getElementById('grid-aktuell').innerHTML = aktuell.map(renderCard).join('');
+      }
+
+      // Abgeschlossene Projekte
+      document.getElementById('count-fertig').textContent = fertig.length;
+      document.getElementById('grid-fertig').innerHTML = fertig.map(renderCard).join('');
+
+      // Wenn keine aktuellen, Divider-Style anpassen
+      if (aktuell.length === 0) {
+        document.getElementById('divider-fertig').style.marginTop = '0';
+      }
+
       initScrollAnimations();
     });
   </script>

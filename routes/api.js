@@ -16,6 +16,25 @@ router.get('/projekte', (req, res) => {
     p.bilder = db.prepare('SELECT * FROM projekt_bilder WHERE projekt_id = ? ORDER BY sort_order, id').all(p.id);
     if (p.titelbild) p.titelbild = '/uploads/projekte/' + p.titelbild;
     p.bilder = p.bilder.map(b => ({ ...b, url: '/uploads/projekte/' + b.filename }));
+
+    // Find matching products by name keywords
+    p.passende_produkte = [];
+    if (p.verfuegbarkeit && p.verfuegbarkeit !== 'einzelstueck') {
+      const keywords = p.name.split(/[\s\-\/]+/).filter(w => w.length > 2);
+      if (keywords.length > 0) {
+        const likeClauses = keywords.map(() => 'p2.name LIKE ?').join(' OR ');
+        const params = keywords.map(k => `%${k}%`);
+        p.passende_produkte = db.prepare(`
+          SELECT p2.id, p2.slug, p2.name, p2.kategorie, p2.preis, p2.lagerbestand,
+            (SELECT filename FROM produkt_bilder WHERE produkt_id = p2.id AND is_cover = 1 LIMIT 1) as titelbild
+          FROM produkte p2 WHERE p2.ist_aktiv = 1 AND (${likeClauses})
+        `).all(...params);
+        p.passende_produkte = p.passende_produkte.map(pr => ({
+          ...pr,
+          titelbild: pr.titelbild ? '/uploads/produkte/' + pr.titelbild : null
+        }));
+      }
+    }
   }
   res.json(projekte);
 });
